@@ -79,6 +79,7 @@ def main():
     parser.add_argument('-i', '--ids', nargs='*', help='classids to generate ical.')
     parser.add_argument('-o', '--output', help='prefix of output ical file.')
     parser.add_argument('-y', '--year', help='year of target class. by default, use current UTC year.')
+    parser.add_argument('-b', '--bundle', help='bundle output ical file to BUNDLE.')
 
     args = parser.parse_args()
 
@@ -102,6 +103,8 @@ def main():
     else:
         ids = args.ids
 
+    ics_start = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//org//me//JP']
+
     for classid in ids:
         lecture_list_html = get_lecture_list(driver, year, classid)
         lec = LectureList.parse_html(lecture_list_html)
@@ -109,8 +112,16 @@ def main():
         if lec is None:
             print(f'Warning: canoot get information about classid {classid}. skipping...')
         else:
-            (Path.cwd() / (file_prefix + classid + '.ics')).write_text(lec.as_ical(), encoding='utf-8')
+            if args.bundle is None:
+                ics = '\n'.join(['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//org//me//JP', lec.as_ical(), 'END:VCALENDAR'])
+                (Path.cwd() / (file_prefix + classid + '.ics')).write_text(ics, encoding='utf-8')
+            else:
+                ics_start.append(lec.as_ical())
     
+    if args.bundle is not None:
+        ics_start.append('END:VCALENDAR')
+        (Path.cwd() / args.bundle).write_text('\n'.join(ics_start), encoding='utf-8')
+
     destruct_selenium(driver)
 
 

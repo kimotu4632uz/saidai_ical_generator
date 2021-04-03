@@ -7,10 +7,11 @@ from .chrome import Chrome
 from .firefox import FireFox
 
 def init_selenium(ignore_default=False):
-    default: Path = Path.cwd() / 'drivers' / 'default'
+    cwd: Path = Path(__file__).resolve().parent
+    default: Path = cwd / 'drivers' / 'default'
 
     if ignore_default or not default.exists():
-        for name, instance in [('chrome', Chrome(Path.cwd())), ('firefox', FireFox(Path.cwd()))]:
+        for name, instance in [('chrome', Chrome(cwd)), ('firefox', FireFox(cwd))]:
             version: Optional[str] = instance.get_version()
 
             if version is None:
@@ -28,9 +29,9 @@ def init_selenium(ignore_default=False):
         default_browser: str = default.read_text()
 
         if default_browser == 'chrome':
-            instance = Chrome(Path.cwd())
+            instance = Chrome(cwd)
         elif default_browser == 'firefox':
-            instance = FireFox(Path.cwd())
+            instance = FireFox(cwd)
 
         version_result: Optional[str] = instance.check_update()
 

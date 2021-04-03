@@ -18,6 +18,15 @@ class DateTimeSet:
     end_time: time
     exclude_dates: list[date]
 
+@dataclass
+class Ical:
+    events: list[str]
+
+    def add_event(self, event: str):
+        self.events.append(event)
+    
+    def to_str(self):
+        return '\n'.join(['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//org//me//JP', '\n'.join(self.events), 'END:VCALENDAR'])
 
 @dataclass(frozen=True)
 class LectureList:
@@ -100,7 +109,7 @@ class LectureList:
  
 
     def as_ical(self) -> str:
-        ical = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//org//me//JP']
+        ical = []
 
         tz_local = get_localzone()
 
@@ -127,6 +136,4 @@ class LectureList:
             vevent.append('END:VEVENT')
             ical.append('\n'.join(vevent))
 
-
-        ical.append('END:VCALENDAR')
         return '\n'.join(ical)
