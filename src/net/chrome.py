@@ -13,7 +13,7 @@ from selenium.webdriver import Chrome as SChrome
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.chrome.webdriver import WebDriver as CWebDriver
 
-from browser import Browser
+from net.browser import Browser
 
 class Chrome(Browser):
     def __init__(self, cwd: Path) -> None:
@@ -82,7 +82,7 @@ class Chrome(Browser):
     
     def finish(self) -> CWebDriver:
         options = ChromeOptions()
-        #options.add_argument('--headless')
+        options.add_argument('--headless')
         options.add_argument(f'--user-data-dir={self.driver_home / "UserData"}')
         options.add_argument('--profile-directory=Profile')
 

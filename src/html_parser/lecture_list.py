@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Optional, cast
 from dataclasses import dataclass
 from datetime import date, time, datetime, timedelta
 import re
 
 from bs4 import BeautifulSoup, Tag
-import itertools
 from tzlocal import get_localzone
+
+from html_parser.html_table_resolver import TableResolver
 
 @dataclass(frozen=True)
 class DateTimeSet:
@@ -23,16 +23,22 @@ class DateTimeSet:
 class LectureList:
     name: str
     teacher: str
+    room: Optional[str]
     code: str
     timetable: list[DateTimeSet]
 
     @classmethod
     def parse_html(cls, html: str) -> Optional[LectureList]:
         doc = BeautifulSoup(html, 'html.parser')
+        for tag in doc(string='\n'):
+            tag.extract()
+        
+        if doc.select_one('#ctl00_phContents_ucLctList_gv') is None:
+            return None
 
-        name_e: Optional[Tag] = doc.select_one('a#ctl00_phContents_ucLctList_ucLctHeader_lnkSbjNm')
+        name_e: Optional[Tag] = doc.select_one('#ctl00_phContents_ucLctList_ucLctHeader_lnkSbjNm')
         teacher_e: Optional[Tag] = doc.select_one('#ctl00_phContents_ucLctList_ucLctHeader_lblStaffNm')
-        code_e: Optional[Tag] = doc.select_one('#ctl00_phContents_ucLctList_ucLctHeader_lblLctCdy')
+        code_e: Optional[Tag] = doc.select_one('#ctl00_phContents_ucLctList_ucLctHeader_lblLctCd')
 
         if name_e is None and teacher_e is None and code_e is None:
             return None
@@ -44,34 +50,31 @@ class LectureList:
         open_days: Optional[Tag] = doc.select_one('#ctl00_phContents_ucLctList_ucLctHeader_lblDayPeriodShort')
         open_days_list: list[str] = cast(Tag, open_days).text.split(',')
 
-        timetable_days: dict[str, list[date]] = dict(itertools.zip_longest(map(lambda s: s[0], open_days_list), [[]], fillvalue=[]))
+        timetable_days: dict[str, list[date]] = { day[0]: [] for day in open_days_list }
 
         start_time: Optional[time] = None
         end_time: Optional[time] = None
+        room: Optional[str] = None
 
         re_date = re.compile(r'(\d{4})/(\d{2})/(\d{2})\((.{1})\)')
         re_time = re.compile(r'(\d{2}):(\d{2})～(\d{2}):(\d{2})')
 
-        first = True
-        for line in doc.select_one(r'#ctl00_phContents_ucLctList_gv').children:
-            if line.name == 'tr':
-                if first:
-                    first = False
-                else:
-                    for item in line.children:
-                        if item.name == 'td':
-                            cap = re_date.fullmatch(item.text)
+        for line in TableResolver(doc.select_one('#ctl00_phContents_ucLctList_gv')):
+            items = list(line)
 
-                            if cap is not None:
-                                if cap[4] in timetable_days:
-                                    timetable_days[cap[4]].append(date(int(cap[1]), int(cap[2]), int(cap[3])))
-                
-                            else:
-                                cap = re_time.fullmatch(item.text)
+            re_date_cap = re_date.fullmatch(items[1].text)
+            if re_date_cap is not None and re_date_cap[4] in timetable_days:
+                timetable_days[re_date_cap[4]].append(date(int(re_date_cap[1]), int(re_date_cap[2]), int(re_date_cap[3])))
 
-                                if cap is not None and start_time is None:
-                                    start_time = time(int(cap[1]), int(cap[2]))
-                                    end_time = time(int(cap[3]), int(cap[4]))
+            re_time_cap = re_time.fullmatch(items[3].text)
+            if re_time_cap is not None and start_time is None:
+                start_time = time(int(re_time_cap[1]), int(re_time_cap[2]))
+                end_time = time(int(re_time_cap[3]), int(re_time_cap[4]))
+
+            if room is None:
+                room = items[4].text if items[4].text is not None and len(items[4].text) > 0 else None
+                if room == u'\xa0':
+                    room = None
 
         timetable: list[DateTimeSet] = []
 
@@ -93,7 +96,7 @@ class LectureList:
             
             timetable.append(DateTimeSet(start_date, end_date, cast(time, start_time), cast(time, end_time), exclude_dates))
         
-        return cls(name, teacher, code, timetable)
+        return cls(name, teacher, room, code, timetable)
  
 
     def as_ical(self) -> str:
@@ -117,6 +120,9 @@ class LectureList:
 
             vevent.append(f'SUMMARY:{self.name}')
             vevent.append(f'DESCRIPTION:{self.teacher}, {self.code}')
+
+            if self.room is not None:
+                vevent.append(f'LOCATION:{self.room}')
 
             vevent.append('END:VEVENT')
             ical.append('\n'.join(vevent))

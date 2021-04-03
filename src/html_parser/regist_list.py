@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass
 
@@ -13,6 +12,8 @@ class RegistList:
     @classmethod
     def parse_html(cls, html: str) -> RegistList:
         doc = BeautifulSoup(html, 'html.parser')
+        for tag in doc(string='\n'):
+            tag.extract()
 
         idlist: set[str] = set()
 
@@ -22,8 +23,7 @@ class RegistList:
                     id_first: str = id_div['id'].rsplit('_', 1)[0]
                     span: Optional[Tag] = doc.select_one(f'span#{id_first}_lblLctCd')
 
-                    if span is not None:
-                        if len(span.text) > 0:
-                            idlist.add(span.text)
+                    if span is not None and len(span.text) > 0:
+                        idlist.add(span.text)
 
         return cls(list(idlist))
