@@ -10,7 +10,7 @@ import requests
 from selenium.webdriver import Firefox
 from selenium.webdriver.firefox.webdriver import WebDriver as FWebDriver
 
-from net.browser import Browser
+from .browser import Browser
 
 class FireFox(Browser):
     def __init__(self, cwd: Path) -> None:

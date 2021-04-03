@@ -13,7 +13,7 @@ from selenium.webdriver import Chrome as SChrome
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.chrome.webdriver import WebDriver as CWebDriver
 
-from net.browser import Browser
+from .browser import Browser
 
 class Chrome(Browser):
     def __init__(self, cwd: Path) -> None:

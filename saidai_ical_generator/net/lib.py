@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 
-from net.chrome import Chrome
-from net.firefox import FireFox
+from .chrome import Chrome
+from .firefox import FireFox
 
 def init_selenium(ignore_default=False):
     default: Path = Path.cwd() / 'drivers' / 'default'

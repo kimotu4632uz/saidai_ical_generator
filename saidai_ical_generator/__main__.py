@@ -10,10 +10,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from net.lib import init_selenium, destruct_selenium
+from .net.lib import init_selenium, destruct_selenium
 
-from html_parser.lecture_list import LectureList
-from html_parser.regist_list import RegistList
+from .html_parser.lecture_list import LectureList
+from .html_parser.regist_list import RegistList
 
 
 def perform_auth(driver, user, passwd):

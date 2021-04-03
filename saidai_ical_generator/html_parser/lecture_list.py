@@ -8,7 +8,7 @@ import re
 from bs4 import BeautifulSoup, Tag
 from tzlocal import get_localzone
 
-from html_parser.html_table_resolver import TableResolver
+from .html_table_resolver import TableResolver
 
 @dataclass(frozen=True)
 class DateTimeSet:
