@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from .net.lib import init_selenium, destruct_selenium
+from .driver import init_selenium, destruct_selenium
 
 from .html_parser.lecture_list import LectureList
 from .html_parser.regist_list import RegistList
@@ -30,11 +30,11 @@ def perform_auth(driver, user, passwd):
     )
 
     action.send_keys_to_element(
-        driver.find_element_by_id('username'), user
+        driver.find_element(By.ID, 'username'), user
     ).send_keys_to_element(
-        driver.find_element_by_id('password'), passwd
+        driver.find_element(By.ID, 'password'), passwd
     ).click(
-        driver.find_element_by_id('kc-login')
+        driver.find_element(By.ID, 'kc-login')
     ).perform()
 
     WebDriverWait(driver, 100).until(

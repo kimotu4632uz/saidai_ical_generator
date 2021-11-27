@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import Optional, cast
 from dataclasses import dataclass
 from datetime import date, time, datetime, timedelta
+from zoneinfo import ZoneInfo
 import re
 
 from bs4 import BeautifulSoup, Tag
-from tzlocal import get_localzone
 
 from .html_table_resolver import TableResolver
 
@@ -111,21 +111,21 @@ class LectureList:
     def as_ical(self) -> str:
         ical = []
 
-        tz_local = get_localzone()
-
         for date in self.timetable:
             vevent = ['BEGIN:VEVENT']
 
-            dtstart = tz_local.localize(datetime.combine(date.start_date, date.start_time))
-            dtend = tz_local.localize(datetime.combine(date.start_date, date.end_time))
-            rrule_until = tz_local.localize(datetime.combine(date.end_date, date.end_time))
+            TOKYO = ZoneInfo('Asia/Tokyo')
 
-            vevent.append(f"DTSTART;TZID={tz_local.zone}:{dtstart.strftime(r'%Y%m%dT%H%M%S')}")
-            vevent.append(f"DTEND;TZID={tz_local.zone}:{dtend.strftime(r'%Y%m%dT%H%M%S')}")
+            dtstart = datetime.combine(date.start_date, date.start_time, tzinfo=TOKYO)
+            dtend = datetime.combine(date.start_date, date.end_time, tzinfo=TOKYO)
+            rrule_until = datetime.combine(date.end_date, date.end_time, tzinfo=TOKYO)
+
+            vevent.append(f"DTSTART;TZID={TOKYO.key}:{dtstart.strftime(r'%Y%m%dT%H%M%S')}")
+            vevent.append(f"DTEND;TZID={TOKYO.key}:{dtend.strftime(r'%Y%m%dT%H%M%S')}")
             vevent.append(f"RRULE:FREQ=WEEKLY;UNTIL={rrule_until.strftime(r'%Y%m%dT%H%M%S')}Z")
 
             for exdate in date.exclude_dates:
-                vevent.append('EXDATE;TZID={}:{}'.format(tz_local.zone, tz_local.localize(datetime.combine(exdate, date.start_time)).strftime(r'%Y%m%dT%H%M%S')))
+                vevent.append('EXDATE;TZID={}:{}'.format(TOKYO.key, datetime.combine(exdate, date.start_time, tzinfo=TOKYO).strftime(r'%Y%m%dT%H%M%S')))
 
             vevent.append(f'SUMMARY:{self.name}')
             vevent.append(f'DESCRIPTION:{self.teacher}, {self.code}')
