@@ -4,18 +4,13 @@ import chromedriver_binary
 from pathlib import Path
 
 def init_selenium():
-    cwd: Path = Path(__file__).resolve().parent
+    cachedir: Path = Path.home() / '.cache' / 'saidai_ical_generator'
 
     options = ChromeOptions()
-    options.add_argument(f'--user-data-dir={cwd / "UserData"}')
+    options.add_argument(f'--user-data-dir={cachedir / "UserData"}')
     options.add_argument('--profile-directory=Profile')
 
     return Chrome(options=options)
-
-
-def perform_first_auth():
-    cwd: Path = Path(__file__).resolve().parent
-    print(f'please run chromium --user-data-dir={cwd / "UserData"} --profile-directory=Profile')
 
 
 def destruct_selenium(driver):

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "saidai_ical_generator"
-version = "0.3.0"
+version = "0.3.1"
 description = ""
 authors = ["kimotu4632uz <32472396+kimotu4632uz@users.noreply.github.com>"]
 
