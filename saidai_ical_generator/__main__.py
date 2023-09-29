@@ -72,14 +72,14 @@ def get_regist_list(driver):
 
 
 def main():
-    parser = ArgumentParser(description='Generate ical file from saidai-student-page.')
-    parser.add_argument('-u', '--user', required=True, help='username')
-    parser.add_argument('-p', '--password', required=True, help='password')
-    parser.add_argument('-a', '--auto-mode', action='store_true',help='get classids from register page.')
-    parser.add_argument('-i', '--ids', nargs='*', help='classids to generate ical.')
-    parser.add_argument('-o', '--output', help='prefix of output ical file.')
-    parser.add_argument('-y', '--year', help='year of target class. by default, use current UTC year.')
-    parser.add_argument('-b', '--bundle', help='bundle output ical file to BUNDLE.')
+    parser = ArgumentParser(description='授業のスケジュールをicsファイルに出力する')
+    parser.add_argument('-u', '--user', required=True, help='suポータルのユーザー名')
+    parser.add_argument('-p', '--password', required=True, help='suポータルのパスワード')
+    parser.add_argument('-a', '--auto-mode', action='store_true', help='履修している授業を自動で取得する')
+    parser.add_argument('-i', '--ids', nargs='*', help='取得する授業のID')
+    parser.add_argument('-o', '--output', help='出力ファイルのプレフィックス')
+    parser.add_argument('-y', '--year', help='対象の授業の開講年。省略された場合、現在の年を用いる。')
+    parser.add_argument('-b', '--bundle', help='出力ファイルをBUNDLEにまとめる。')
 
     args = parser.parse_args()
 

@@ -1,5 +1,4 @@
 from selenium.webdriver import Chrome, ChromeOptions
-import chromedriver_binary
 
 from pathlib import Path
 
